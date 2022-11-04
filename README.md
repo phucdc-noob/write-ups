@@ -1,2 +1,1 @@
-# write-ups
-My own write ups
+My own write ups, nothing else
