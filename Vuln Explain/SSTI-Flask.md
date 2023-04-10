@@ -151,3 +151,43 @@ All Rights Reserved., 'credits':     Thanks to CWI, CNRI, BeOpen.com, Zope Corpo
 
 `__builtins__` có thể đi cùng với `__globals__` trong một số trường hợp như dưới đây:
 
+```python
+print(globals()['__builtins__'])
+
+'''
+<module 'builtins' (built-in)>
+'''
+```
+
+Như vậy, ta đã tìm hiểu sơ qua về các Object phổ biến trong Python, giờ chúng ta sẽ sử dụng những Object này để thực hiện vấn đề ban đầu
+
+### II. From objects to a freaking hole?
+
+Ta sẽ sử dụng ví dụ sau:
+
+```python
+from flask import Flask, request, render_template_string
+
+app = Flask(__name__)
+
+@app.route("/")
+def home():
+    if request.args.get('c'):
+        return render_template_string(request.args.get('c'))
+    else:
+        return "<h3>Param 'c' is required!!!</h3>"
+
+if __name__ == "__main__":
+    app.run()
+```
+
+Có thể thấy, ta có thể SSTI thông qua param `c`, cùng test thử nhé? Tôi đã viết 1 cái script nho nhỏ để gửi payload cho nhanh :)))
+
+![image](https://user-images.githubusercontent.com/82533607/230844291-c4d5638e-d500-44ff-befc-40048b9a8797.png)
+
+Ta sẽ bắt đầu bằng:
+
+![image](https://user-images.githubusercontent.com/82533607/230846140-81349312-019e-4e16-9fc2-db9278e56d73.png)
+
+Tiếp tục với `__base__`:
+
