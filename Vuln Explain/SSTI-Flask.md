@@ -185,9 +185,11 @@ Có thể thấy, ta có thể SSTI thông qua param `c`, cùng test thử nhé?
 
 ![image](https://user-images.githubusercontent.com/82533607/230844291-c4d5638e-d500-44ff-befc-40048b9a8797.png)
 
-Ta sẽ bắt đầu bằng:
+Và có thể dùng payload sau:
 
-![image](https://user-images.githubusercontent.com/82533607/230846140-81349312-019e-4e16-9fc2-db9278e56d73.png)
+![image](https://user-images.githubusercontent.com/82533607/230854115-1e868ea8-cf56-4d8b-acfc-cd20cb67e88d.png)
 
-Tiếp tục với `__base__`:
+Trong một số giải CTF, SSTI xuất hiện với nhiều dạng khác nhau, và còn kèm thêm filters, nên ta sẽ tìm các payload phụ thuộc vào filters của source, làm đa dạng hoá các payload, giống như bài [này](https://github.com/phucdc/write-ups/blob/main/FUSec%202021/README.md#prp202)
+
+Có thể tham khảo thêm tại [đây](https://chowdera.com/2020/12/20201221231521371q.html)
 
