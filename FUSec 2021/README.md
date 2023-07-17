@@ -593,7 +593,7 @@ Sang đến `choilai()` thì ta thấy rằng nó sẽ `pop` cái mục `check` 
 
 Đã rõ cách để trigger template, thử nhập `{{7*7}}` ở index và làm các bước như trên:
 
-![7*7](https://raw.githubusercontent.com/phucdc-noob/FUSec-Write-Ups/main/img/PRP202_1.png)
+![7*7](https://raw.githubusercontent.com/phucdc/write-ups/main/FUSec%202021/img/PRP202_1.png)
 
 ## Exploit
 
@@ -649,7 +649,7 @@ Payload hoàn chỉnh:
 
 ## Flag:
 
-![flag](https://raw.githubusercontent.com/phucdc-noob/FUSec-Write-Ups/main/img/PRP202_2.png)
+![flag](https://raw.githubusercontent.com/phucdc/write-ups/main/FUSec%202021/img/PRP202_2.png)
 
 Flag: `FUSEC{@@@@@@Th3_n3Xt_l3v3l_pL4y!!!!!!!!}`
 
